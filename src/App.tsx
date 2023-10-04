@@ -1,11 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Login from './Login';
 import Home from './Home';
 
-function App() {
+const App = () => {
+
+  const [mobileNumber, setMobileNumber] = useState<string | null>(null)
+
+  const loginHandler = (mobileNumber: string) => {
+    setMobileNumber(mobileNumber)
+  }
+
+  const logoutHandler= () => {
+    setMobileNumber(null)
+  }
   return (
     <div className="App">
-      <Home />
+      {
+        mobileNumber === null ? <Login loginHandler={loginHandler} /> : <Home mobileNumber={mobileNumber} logoutHandler={logoutHandler} />
+      }
     </div>
   );
 }

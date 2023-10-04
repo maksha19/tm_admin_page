@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 
 interface ImageUploadProps {
-  onImageUpload: (imageUrl: string) => void;
-  handleImage :(file :File) => void;
-  restImage? :(restImageUrl :Function) => void;
+  handleImage: (file: File) => void;
+  imageFile: string | undefined
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload,handleImage}) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ handleImage, imageFile }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (imageFile === undefined) {
+        setSelectedFile(null)
+        setImageUrl(null)
+      }
+    }, 1500)
+  }, [imageFile])
 
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];

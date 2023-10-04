@@ -5,7 +5,12 @@ import DateSelector from './DateSelector';
 import axios from 'axios';
 
 
-const Home: React.FC = () => {
+interface HomeInterface {
+    mobileNumber: string | undefined | null
+    logoutHandler: () => void
+}
+
+const Home: React.FC<HomeInterface> = ({ mobileNumber, logoutHandler }) => {
     const optionsKeyMaps: Record<string, number> = {
         'DD-Information': 8000100,
         'DD-Recognition': 8000101,
@@ -34,6 +39,7 @@ const Home: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<string | undefined>(undefined);
     const [alert, setAlert] = useState<Boolean>(false);
     const [imageType, setImageType] = useState<string>('image/jpeg')
+    const [isImageSubmit, setIsImageSubmit] = useState(false)
 
     const handleDateChange = (date: Date | null) => {
         setSelectedDate(date);
@@ -43,10 +49,6 @@ const Home: React.FC = () => {
         setSelectedOption(option);
         console.log('handleOptionSelect', option);
 
-    };
-
-    const handleImageUpload = (imageUrl: string) => {
-        setUploadedImageUrl(imageUrl);
     };
 
     const handleImage = (file: File) => {
@@ -72,31 +74,32 @@ const Home: React.FC = () => {
     }
 
     const handleUpload = async () => {
-        if (!selectedFile || !selectedOption || !selectedDate) {
+        if (!selectedFile || !selectedOption || !selectedDate || !mobileNumber) {
+            console.log('missing filed', { selectedFile, selectedDate, selectedOption, mobileNumber })
             setAlert(true)
             clearAlret()
             return
         };
+        setIsImageSubmit(true)
 
         const requestData = {
             'eventId': optionsKeyMaps[selectedOption],
             'eventDate': selectedDate.getTime(),
+            'from': parseInt(mobileNumber),
+            'imageType': imageType,
             'image': selectedFile,
-            'from': 12132,
-             imageType
-
         }
         console.log('requestData', requestData);
-        const headers ={
-            'Content-Type' : 'application/json',
-            'Access-Control-Request-Method': 'OPTIONS,POST,GET',
-            'Access-Control-Allow-Origin': '*'
-        }
-
-
         try {
-            const response = await axios.post('https://bwmyshbjruht7f2qgzrnanxfcm0yktii.lambda-url.ap-southeast-1.on.aws/', requestData,{headers});
-            clearState()
+            const response = await axios.post('https://dyt43w7xtmano5ykvxwohf7mym0nvrry.lambda-url.ap-southeast-1.on.aws/', requestData, {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if(response.status === 200){
+                clearState()
+                return
+            } 
         } catch (error) {
             console.error('Image upload failed:', error);
         }
@@ -119,16 +122,25 @@ const Home: React.FC = () => {
             setSelectedFile(undefined)
             setAlert(false)
             setImageType('image/jpeg')
+            setIsImageSubmit(false)
         }, 0)
 
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-semibold mb-4">Select the category</h1>
+        <div className="container mt-20 mx-auto p-4">
+            <h1 className="text-2xl pt-4 font-semibold mb-4">District-80 Telegram service</h1>
+            <div className='flex justify-end'>
+            <button
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-red active:bg-red-700"
+                onClick={()=> logoutHandler()}
+            >
+                Logout
+            </button>
+            </div>
             <Dropdown options={options} selectedOption={selectedOption} onSelect={handleOptionSelect} />
             <DateSelector selectedDate={selectedDate} onChange={handleDateChange} />
-            <ImageUpload onImageUpload={handleImageUpload} handleImage={handleImage} />
+            <ImageUpload handleImage={handleImage} imageFile={selectedFile} />
             {uploadedImageUrl && (
                 <div className="mt-4">
                     <h2 className="text-lg font-semibold">Uploaded Image Preview</h2>
@@ -137,14 +149,16 @@ const Home: React.FC = () => {
             )}
             {alert && <div className="text-red-500">Image size should be with in 1Mb or Please fill all field</div>}
             {selectedFile && (
+                <div className='flex justify-center'>
                 <button
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-blue active:bg-blue-700"
                     onClick={handleUpload}
+                    disabled={isImageSubmit}
                 >
-                    Upload
+                    {isImageSubmit ? "Uploading..." : "Submit"}
                 </button>
+                </div>
             )}
-
         </div>
     );
 };
