@@ -62,6 +62,12 @@ const Login: React.FC<LoginInterface> = ({ loginHandler }) => {
     }, 1200)
   }
 
+  const handleKeyPress = (e:any) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-96">
@@ -99,7 +105,7 @@ const Login: React.FC<LoginInterface> = ({ loginHandler }) => {
         {alert && <div className="text-red-500">{alertMessage}</div>}
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-blue active:bg-blue-700"
-          onClick={handleLogin}
+          onClick={handleLogin} onKeyUp={handleKeyPress}
         >
           Login
         </button>
